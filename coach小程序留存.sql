@@ -1,15 +1,17 @@
 -- coach小程序复购率全量跑
 
-select current1.schedulenum as current_shedulenum,
-       current1.usernum as current_users,
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+insert overwrite table keep_app.rpt_kl_tmp1 partition (month_last_day)
+
+  select current1.schedulenum as class_count,
+       current1.usernum as users_count,
        current1.coachuserid,
-       retention.last_cnt as last_users,
-       retention.retain_cnt as retain_users,
-       retention.retain_rate as retain_rate,
-       current1.monthly as monthly
+       retention.retain_cnt as retention_count,
+       retention.retain_rate as retention_rate,
+       current1.monthly as month_last_day
 from
   (select count(distinct course.schedule_id) as schedulenum,
-        count(distinct user_id) as usernum,
         monthly,
         coachuserid
   from
@@ -24,15 +26,15 @@ from
     where p_date = "2019-08-19"
     )relation
   on course.schedule_id = relation.scheduleid
-   left outer join
-   (select user_id,
-           schedule_id
-    from keep_dw.dwd_kl_order_new
-    where status in (2,3,4,5,6) 
-    )users
-  on users.schedule_id = course.schedule_id
   group by monthly,coachuserid
   )current1
+  left outer join
+  (select count(distinct user_id)as usernum,coach_user_id,last_day(date) as monthly
+    from keep_dw.dwd_kl_order_new
+    where status in (2,3,4,5,6)
+    group by last_day(date),coach_user_id 
+    )users 
+  on users.coach_user_id = current1.coachuserid and users.monthly = current1.monthly
 left outer join
   (select add_months(lastmonth.monthly,1) as monthly,
      count(lastmonth.user_id) as last_cnt,
