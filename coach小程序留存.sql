@@ -5,7 +5,7 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 insert overwrite table keep_app.rpt_kl_tmp1 partition (month_last_day)
 
   select current1.schedulenum as class_count,
-       current1.usernum as users_count,
+       users.usernum as users_count,
        current1.coachuserid,
        retention.retain_cnt as retention_count,
        retention.retain_rate as retention_rate,
