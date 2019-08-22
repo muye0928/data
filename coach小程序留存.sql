@@ -2,14 +2,14 @@
 
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
-insert overwrite table keep_temp.rpt_kl_mini_all partition (month_last_day)
+insert overwrite table keep_temp.rpt_kl_mini_all partition (monthly)
 
   select current1.schedulenum as class_count,
        users.usernum as users_count,
        current1.coachuserid,
        retention.retain_cnt as retention_count,
        retention.retain_rate as retention_rate,
-       current1.monthly as month_last_day
+       substring(current1.monthly,0,7)  as monthly
 from
   (select count(distinct course.schedule_id) as schedulenum,
         monthly,
