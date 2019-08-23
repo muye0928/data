@@ -198,7 +198,7 @@ create table if not exists keep_temp.rpt_kl_mini_courses
     from keep_ods.ods_kl_schedule_coach_relation
     where p_date = "2019-08-22")relation 
   on book_info.schedule_id = relation.scheduleid
-  group by base_id,coachuserid,last_day(date)
+  group by base_id,coachuserid,monthly
   )schedule_info
 
 left outer join
@@ -211,9 +211,11 @@ left outer join
         course_level.coachuserid
 
 from 
-(select user_id,
-        schedule_id,
-        last_day(date) as monthly
+(select user_id,monthly,coachuserid
+from 
+        (select user_id,
+                schedule_id,
+                last_day(date) as monthly
         from keep_dw.dwd_kl_order_new
         where status in (2,3,4,5,6)
         )last1
@@ -222,14 +224,14 @@ from
           from keep_ods.ods_kl_schedule_coach_relation
           where p_date = "2019-08-22")relation1
         on last1.schedule_id = relation1.scheduleid
-        group by last_day(date),user_id
+        group by monthly,user_id,coachuserid
         )last2
 inner join
-（select user_id,
-        monthly,
-        coachuserid,
-        base_id 
-from
+       (select user_id,
+               monthly,
+               coachuserid,
+               base_id 
+        from
         (select user_id,
         schedule_id,
         last_day(date) as monthly,
@@ -240,14 +242,15 @@ from
         left outer join
         (select scheduleid,coachuserid
           from keep_ods.ods_kl_schedule_coach_relation
-          where p_date = "2019-08-22")relation2
+          where p_date = "2019-08-22"
+        )relation2
         on now.schedule_id = relation2.scheduleid
-        group by last_day(date), user_id,coachuserid,base_id
-        ）course_level
+        group by monthly, user_id,coachuserid,base_id
+        )course_level
   on last2.user_id = course_level.user_id and last2.monthly = add_months(course_level.monthly,-1) and last2.coachuserid = course_level.coachuserid
+  group by course_level.base_id,course_level.monthly,course_level.coachuserid
 )retention 
 
 on schedule_info.coachuserid = retention.coachuserid
 and schedule_info.base_id = retention.base_id
 and schedule_info.monthly = retention.monthly
-
