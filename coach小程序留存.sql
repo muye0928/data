@@ -254,3 +254,4 @@ inner join
 on schedule_info.coachuserid = retention.coachuserid
 and schedule_info.base_id = retention.base_id
 and schedule_info.monthly = retention.monthly
+
