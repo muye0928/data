@@ -92,12 +92,12 @@ left outer join
       and statevalue <>-20 
       and (videolength >=60 or (parse_chinese(content) >=400 and array_contains(contenttype,"photo"))))entity
 on entity.author = author.user_id
-inner join 
+left outer join 
 (select entityid
  from keep_dw.dwd_entity_tag
- where p_date = "2019-08-25" and labelid not in (37,322,386,387,388,389)
+ where p_date = "2019-08-25" and labelid  in (37,322,386,387,388,389)
 group by entityid)label
-on label.entityid = entity.id)raw
+on label.entityid = entity.id where label.entityid is null)raw
 where rank <=30)raw1
 group by raw1.user_name,raw1.user_id
 
