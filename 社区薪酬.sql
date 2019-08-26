@@ -4,11 +4,11 @@ create temporary function parse_chinese as 'com.keep.udf.ParseChinese';
 
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
-insert overwrite table ***
+insert overwrite table keep_app.rpt_su_author_salary_details partition (p_date = "2019-08-25")
 
 
 select user_name,user_id,id,type,
-       revenue
+       if(revenue = 0,100,revenue)as final_revenue
 from
 (
 select user_name,user_id,id,type,revenue,row_number()over(partition by user_name order by revenue desc) as rank
@@ -26,18 +26,18 @@ left outer join
              when favoritecount >=160 and favoritecount <200 then 340
              when favoritecount >= 200 and favoritecount <400 then 400
              when favoritecount >=400 then 500
-             else 100 end as revenue
+             else 0 end as revenue
       from keep_dw.dwd_su_entries
       where entry_date >="2019-07-26" and entry_date <="2019-08-25" 
       and statevalue <>-20 
       and (videolength >=60 or (parse_chinese(content) >=400 and array_contains(contenttype,'photo'))))entity
 on entity.author = author.user_id
-inner join 
+left outer join 
 (select entityid
  from keep_dw.dwd_entity_tag
- where p_date = "2019-08-25" and labelid not in (37,322,386,387,388,389)
+ where p_date = "2019-08-25" and labelid in (37,322,386,387,388,389)
 group by entityid)label
-on label.entityid = entity.id)raw
+on label.entityid = entity.id where label.entityid is null)raw
 where rank <=30 
 
 
