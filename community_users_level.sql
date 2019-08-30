@@ -50,16 +50,17 @@ from
        coalesce(identity.verify,0) as verify,
        coalesce(bad_label.bad,0) as bad
        from 
-(select sum(if (statevalue <>-20 and entry_date >="2019-08-19" and entry_date<="2019-08-25"and unmark = 1,1,0)) as week_active,
-        sum(if (statevalue <>-20 and entry_date >="2018-08-26" and entry_Date <="2019-08-25"and unmark = 1 , 1, 0)) as year_enteries,
-        sum(if (statevalue <>-20 and entry_date >="2018-08-26" and entry_Date <="2019-08-25"and unmark = 1  and hashtag_type = "operation", 1, 0)) as operation_entries,
-        sum(if (statevalue <>-20 and entry_date >="2018-08-26" and entry_date <="2019-08-25"  ,internalsharecount+externalsharecount,0)) as share_count,
-        sum(if (statevalue <>-20 and entry_date >="2018-08-26" and entry_date <="2019-08-25"  ,likes,0)) as likes_count,
-        sum(if (statevalue <>-20 and entry_date >="2018-08-26" and entry_date <="2019-08-25" ,comments,0)) as comment_count,
-        sum(if (statevalue <>-20 and entry_date >="2018-08-26" and entry_date <="2019-08-25" ,favoritecount,0)) as bookmark_count,
+(select sum(if (entry_date >="2019-08-19" and entry_date<="2019-08-25"and unmark = 1,1,0)) as week_active,
+        sum(if (entry_date >="2018-08-26" and entry_Date <="2019-08-25"and unmark = 1 , 1, 0)) as year_enteries,
+        sum(if (entry_date >="2018-08-26" and entry_Date <="2019-08-25"and unmark = 1  and hashtag_type = "operation", 1, 0)) as operation_entries,
+        sum(if (entry_date >="2018-08-26" and entry_date <="2019-08-25"  ,internalsharecount+externalsharecount,0)) as share_count,
+        sum(if (entry_date >="2018-08-26" and entry_date <="2019-08-25"  ,likes,0)) as likes_count,
+        sum(if (entry_date >="2018-08-26" and entry_date <="2019-08-25" ,comments,0)) as comment_count,
+        sum(if (entry_date >="2018-08-26" and entry_date <="2019-08-25" ,favoritecount,0)) as bookmark_count,
        author
 from keep_dw.dwd_su_entries
-group by author)entity
+group by author
+where statevalue <>-20)entity
 inner join
 (select user_name,user_id,level,
         case when fans <500 then 1
